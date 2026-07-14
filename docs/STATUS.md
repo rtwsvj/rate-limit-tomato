@@ -43,7 +43,7 @@
 | 当前工作树完整质量门 | 自动验证 | 2026-07-14：261 项测试、Swift/Shell、版本、红线、公开树、release 打包和隔离冒烟全部通过 |
 | 第三方许可证随源码和发行包提供 | 自动验证 | 根目录、App 和重新解包的 ZIP 均通过 notices 校验 |
 | GitHub 公开元数据与匿名访问 | 待验证 | description、topics、homepage、social preview 和未登录访问核对 |
-| 远端完整 CI | 待验证 | 本地候选已全绿；公开提交后必须触发并取得实际远端成功记录 |
+| 远端完整 CI | 自动验证 | [公开 run 29345177320](https://github.com/rtwsvj/rate-limit-tomato/actions/runs/29345177320)：arm64、Intel、universal 打包及 macOS 14 最低系统启动全部通过 |
 | 已公证公开稳定二进制 | 阻断 | 缺 Apple notarization/stapling 与干净 quarantine Gatekeeper 验收 |
 
 `已实现` 只说明当前工作区已具备对应内容；在当前树完成统一验证、提交并取得远端证据前，不升级为“公开发行完成”。

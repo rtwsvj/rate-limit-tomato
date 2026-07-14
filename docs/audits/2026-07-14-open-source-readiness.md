@@ -8,6 +8,7 @@ Rate Limit Tomato is ready for a **source-first public release**.
 - Full automated suite: **261 tests passed**
 - Public-tree, product-redline, version, whitespace, and locked-dependency gates: **passed**
 - Release arm64 App packaging, ad-hoc signature verification, isolated launch, zero-socket probe, and ZIP round-trip verification: **passed**
+- [Public GitHub CI run 29345177320](https://github.com/rtwsvj/rate-limit-tomato/actions/runs/29345177320): **passed** on macOS 15 Apple silicon, macOS 15 Intel, universal packaging, and macOS 14 minimum-runtime smoke
 - Public binary status: **not released**; Apple notarization and clean-system Gatekeeper acceptance remain separate future gates
 
 ## Adversarial review scope
