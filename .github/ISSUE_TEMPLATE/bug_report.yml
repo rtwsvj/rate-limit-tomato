@@ -1,0 +1,84 @@
+name: Bug report
+description: Report a reproducible problem in Rate Limit Tomato
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Do not post vulnerability details here; follow SECURITY.md for private reporting.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight
+      options:
+        - label: I searched existing issues for the same problem.
+          required: true
+        - label: This report does not contain credentials, personal data, signing identities, or private vulnerability details.
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: App version or commit
+      description: For example, a release version or Git commit SHA.
+      placeholder: vX.Y.Z or commit SHA
+    validations:
+      required: true
+
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version and hardware
+      placeholder: macOS version, Mac model, Apple silicon or Intel
+    validations:
+      required: true
+
+  - type: dropdown
+    id: installation
+    attributes:
+      label: Installation method
+      options:
+        - Built from source with SwiftPM
+        - Packaged app
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide the smallest deterministic sequence you can.
+      placeholder: |
+        1. Launch the app...
+        2. Change...
+        3. Observe...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs, screenshots, or sample data
+      description: Redact private information and attach only what is needed to reproduce the issue.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Include frequency, workarounds, accessibility impact, or possible regression range.

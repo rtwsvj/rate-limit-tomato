@@ -1,0 +1,154 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+    # GitHub does not evaluate path filters for tag pushes, so every release tag
+    # still runs the complete matrix. Documentation-only branch pushes should
+    # not consume four macOS runners.
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-arm64:
+    name: Quality gate (macOS 15 arm64)
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+      - name: Toolchain inventory
+        run: |
+          swift --version
+          xcodebuild -version
+          sw_vers
+      - name: Install release tooling
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+        run: |
+          brew install ripgrep shellcheck
+      - name: Shell script lint
+        run: |
+          shellcheck -x scripts/*.sh scripts/lib/*.sh
+          bash -n scripts/*.sh scripts/lib/*.sh
+      - name: Locked build, tests, warnings, version, and red lines
+        run: bash scripts/verify.sh
+
+  quality-intel:
+    name: Quality gate (macOS 15 Intel)
+    runs-on: macos-15-intel
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+      - name: Toolchain inventory
+        run: |
+          swift --version
+          xcodebuild -version
+          sw_vers
+      - name: Install release tooling
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+        run: brew install ripgrep
+      - name: Locked build and tests on x86_64
+        env:
+          # ImageRenderer's Metal path aborts on GitHub's headless Intel host.
+          # Rendering tests run in full in the arm64 quality job above.
+          RLT_SKIP_SNAPSHOT_TESTS: '1'
+        run: bash scripts/verify.sh
+
+  package-universal:
+    name: Universal ad-hoc release candidate
+    runs-on: macos-15
+    timeout-minutes: 45
+    needs: [quality-arm64, quality-intel]
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+      - name: Install release tooling
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+        run: brew install ripgrep
+      - name: Build and verify universal app
+        run: >-
+          bash scripts/make-app.sh
+          --configuration release
+          --arch universal
+          --sign adhoc
+          --output-dir dist/ci
+      - name: Safe isolated process smoke
+        run: bash scripts/smoke-app.sh --app dist/ci/RateLimitTomato.app
+      - name: Archive, re-extract, and verify
+        run: >-
+          bash scripts/archive-app.sh
+          --app dist/ci/RateLimitTomato.app
+          --label adhoc
+          --output-dir dist/ci
+      - name: Upload verified universal candidate
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: rate-limit-tomato-universal-${{ github.sha }}
+          path: |
+            dist/ci/*.zip
+            dist/ci/release-manifest.json
+            dist/ci/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14
+
+  minimum-macos-runtime:
+    name: Minimum runtime smoke (macOS 14 arm64)
+    runs-on: macos-14
+    timeout-minutes: 15
+    needs: [package-universal]
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - name: Install verification tooling
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+        run: brew install ripgrep
+      - name: Download verified universal candidate
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: rate-limit-tomato-universal-${{ github.sha }}
+          path: dist/minimum-runtime
+      - name: Verify integrity and launch on the minimum macOS
+        run: |
+          shopt -s nullglob
+          archives=(dist/minimum-runtime/*.zip)
+          [ "${#archives[@]}" -eq 1 ]
+          /usr/bin/ditto -x -k "${archives[0]}" dist/minimum-runtime
+          (cd dist/minimum-runtime && /usr/bin/shasum -a 256 -c SHA256SUMS)
+          bash scripts/smoke-app.sh \
+            --app dist/minimum-runtime/RateLimitTomato.app
+
+  release-preflight:
+    name: Tagged release contract
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: macos-15
+    timeout-minutes: 10
+    needs: [quality-arm64, quality-intel, package-universal, minimum-macos-runtime]
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+      - name: Require matching version, notes, tag, and clean tree
+        run: >-
+          bash scripts/check-version.sh
+          --release
+          --require-tag
+          --clean

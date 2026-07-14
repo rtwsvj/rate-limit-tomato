@@ -1,0 +1,56 @@
+name: Feature request
+description: Propose a focused improvement that preserves the project's local-only boundaries
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Rate Limit Tomato remains local-only, parody-safe, and free of real payment flows. Proposals outside those boundaries cannot be accepted.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight
+      options:
+        - label: I searched existing issues and the product specification for a similar proposal.
+          required: true
+        - label: The proposal adds no runtime networking, telemetry, account, or cloud-sync behavior.
+          required: true
+        - label: The proposal adds no real payment flow or purchase URL.
+          required: true
+        - label: The proposal uses no real vendor trademark, logo, copied asset, or vendor-specific product wording.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or user need
+      description: Describe the problem before describing a solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Explain the user-visible behavior and where it fits in the current flow.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Include simpler workflows or existing features that partly address the need.
+
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation approach
+      description: Describe tests, accessibility checks, screenshots, or acceptance criteria.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add mockups or examples that do not contain third-party proprietary assets.
