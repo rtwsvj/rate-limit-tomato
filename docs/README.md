@@ -18,8 +18,9 @@ This directory contains the product contract, implementation status, public-dist
 | 6 | [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md) | 构建、签名、公证、归档与发布的重复执行门禁 |
 | 7 | [APP-SMOKE-CHECKLIST.md](APP-SMOKE-CHECKLIST.md) | 真实 `.app` 系统接线与人工验收清单 |
 | 8 | [DEPENDENCIES.md](DEPENDENCIES.md) | 直接依赖、锁定版本、用途与许可证来源 |
-| 9 | [2026-07-14 开源准备审计](audits/2026-07-14-open-source-readiness.md) | 对抗性复审、发布阻断结论和可复现验证证据 |
-| 10 | [`assets/`](assets/) | 品牌中立的社交预览、真实截图和公开视觉资产 |
+| 9 | [AUDIT_HANDOFF.md](AUDIT_HANDOFF.md) | 外部审计入口、证据限制、优先风险面和交付格式 |
+| 10 | [2026-07-14 开源准备审计](audits/2026-07-14-open-source-readiness.md) | 对抗性复审、发布阻断结论和可复现验证证据 |
+| 11 | [`assets/`](assets/) | 品牌中立的社交预览、真实截图和公开视觉资产 |
 
 根目录 [CHANGELOG.md](../CHANGELOG.md) 只记录用户可感知变化；Git 历史、CI 记录、Release manifest 和 SHA 清单承担可追溯证据，不在公开树中保存私人会话或代理执行日志。
 

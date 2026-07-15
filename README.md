@@ -108,6 +108,7 @@ Tests/
 
 - [产品规格](docs/SPEC.md)
 - [实现状态](docs/STATUS.md)
+- [外部审计交接](docs/AUDIT_HANDOFF.md)
 - [开源发布说明](docs/OPEN_SOURCE_LAUNCH.md)
 - [发布检查清单](docs/RELEASE-CHECKLIST.md)
 - [贡献指南](CONTRIBUTING.md)
