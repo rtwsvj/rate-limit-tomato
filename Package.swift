@@ -7,7 +7,7 @@ let package = Package(
     platforms: [.macOS(.v14)],
     dependencies: [
         // 直接依赖（docs/DEPENDENCIES.md）：全局快捷键 / 开机自启 / MenuBarExtra 底层访问
-        .package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "2.0.0"),
+        .package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "3.0.1"),
         .package(url: "https://github.com/sindresorhus/LaunchAtLogin-Modern", from: "1.0.0"),
         .package(url: "https://github.com/orchetect/MenuBarExtraAccess", from: "1.0.0"),
     ],
