@@ -83,28 +83,26 @@ final class StartupSanitizationTests: XCTestCase {
         }
     }
 
-    // MARK: - isValidSnapshot
+    // MARK: - validatedSnapshot
 
     func testValidSnapshotWithinWindowIsAccepted() {
         let now = Date(timeIntervalSince1970: 1_700_000_000)
-        let cal = Calendar(identifier: .gregorian)
         let snap = EngineSnapshot(
             phase: .idle, phaseEnteredAt: now,
             currentSession: nil, consecutiveAborts: [], currentDayKey: "2026-07-08")
-        XCTAssertTrue(TomatoEngine.isValidSnapshot(snap, now: now))
+        XCTAssertNotNil(TomatoEngine.validatedSnapshot(snap, now: now))
         // now 后退 4 分钟，相对偏移 = +4min（轻微时钟回拨，合法）
-        XCTAssertTrue(TomatoEngine.isValidSnapshot(snap, now: now.addingTimeInterval(-4 * 60)))
+        XCTAssertNotNil(TomatoEngine.validatedSnapshot(snap, now: now.addingTimeInterval(-4 * 60)))
         // now 前进 2 小时，相对偏移 = -2h（合法）
-        XCTAssertTrue(TomatoEngine.isValidSnapshot(snap, now: now.addingTimeInterval(7200)))
+        XCTAssertNotNil(TomatoEngine.validatedSnapshot(snap, now: now.addingTimeInterval(7200)))
         // snapshot = now - 6d（合法，位于长期恢复窗口内）
         let sixDaysAgo = EngineSnapshot(phase: .idle,
                                         phaseEnteredAt: now.addingTimeInterval(-6 * 86400),
                                         currentSession: nil, consecutiveAborts: [],
                                         currentDayKey: "2026-07-08")
-        XCTAssertTrue(TomatoEngine.isValidSnapshot(sixDaysAgo, now: now))
+        XCTAssertNotNil(TomatoEngine.validatedSnapshot(sixDaysAgo, now: now))
         // now 推后 23h，相对偏移为过去 23h，仍在长期恢复下界内
-        XCTAssertTrue(TomatoEngine.isValidSnapshot(snap, now: now.addingTimeInterval(23 * 3600)))
-        _ = cal
+        XCTAssertNotNil(TomatoEngine.validatedSnapshot(snap, now: now.addingTimeInterval(23 * 3600)))
     }
 
     func testSnapshotMoreThanFiveMinutesInFutureIsRejected() {
@@ -113,8 +111,8 @@ final class StartupSanitizationTests: XCTestCase {
             phase: .idle,
             phaseEnteredAt: now.addingTimeInterval(5 * 60 + 1),
             currentSession: nil, consecutiveAborts: [], currentDayKey: "2026-07-08")
-        XCTAssertFalse(TomatoEngine.isValidSnapshot(snap, now: now))
-        XCTAssertFalse(TomatoEngine.isValidSnapshot(snap, now: Date.distantPast),
+        XCTAssertNil(TomatoEngine.validatedSnapshot(snap, now: now))
+        XCTAssertNil(TomatoEngine.validatedSnapshot(snap, now: Date.distantPast),
                       "相对当前时钟明显位于未来的快照必须拒绝")
     }
 
@@ -124,7 +122,7 @@ final class StartupSanitizationTests: XCTestCase {
             phase: .idle,
             phaseEnteredAt: now.addingTimeInterval(-(TomatoEngine.snapshotPastDays + 1) * 86400),
             currentSession: nil, consecutiveAborts: [], currentDayKey: "2026-07-08")
-        XCTAssertFalse(TomatoEngine.isValidSnapshot(snap, now: now))
+        XCTAssertNil(TomatoEngine.validatedSnapshot(snap, now: now))
     }
 
     func testDistantPastAndDistantFutureAreRejected() {
@@ -134,23 +132,13 @@ final class StartupSanitizationTests: XCTestCase {
                                            currentSession: nil,
                                            consecutiveAborts: [],
                                            currentDayKey: "9999-99-99")
-        XCTAssertFalse(TomatoEngine.isValidSnapshot(farFutureSnap, now: now))
+        XCTAssertNil(TomatoEngine.validatedSnapshot(farFutureSnap, now: now))
         let farPastSnap = EngineSnapshot(phase: .idle,
                                          phaseEnteredAt: .distantPast,
                                          currentSession: nil,
                                          consecutiveAborts: [],
                                          currentDayKey: "0000-01-01")
-        XCTAssertFalse(TomatoEngine.isValidSnapshot(farPastSnap, now: now))
-    }
-
-    func testIsValidSnapshotWithClockOverload() {
-        let clock = MockClock(start: Date(timeIntervalSince1970: 1_700_000_000))
-        let snap = EngineSnapshot(phase: .idle,
-                                  phaseEnteredAt: clock.now(),
-                                  currentSession: nil,
-                                  consecutiveAborts: [],
-                                  currentDayKey: "2026-07-08")
-        XCTAssertTrue(TomatoEngine.isValidSnapshot(snap, clock: clock))
+        XCTAssertNil(TomatoEngine.validatedSnapshot(farPastSnap, now: now))
     }
 
     func testSnapshotExactlyAtRecoveryBoundaryIsAccepted() {
@@ -159,7 +147,7 @@ final class StartupSanitizationTests: XCTestCase {
         let snap = EngineSnapshot(phase: .idle, phaseEnteredAt: at,
                                   currentSession: nil, consecutiveAborts: [],
                                   currentDayKey: "2026-07-08")
-        XCTAssertTrue(TomatoEngine.isValidSnapshot(snap, now: now),
+        XCTAssertNotNil(TomatoEngine.validatedSnapshot(snap, now: now),
                       "长期恢复边界内接受；正好位于下界时通过")
     }
 
@@ -169,7 +157,7 @@ final class StartupSanitizationTests: XCTestCase {
         let snap = EngineSnapshot(phase: .idle, phaseEnteredAt: at,
                                   currentSession: nil, consecutiveAborts: [],
                                   currentDayKey: "2026-07-08")
-        XCTAssertTrue(TomatoEngine.isValidSnapshot(snap, now: now))
+        XCTAssertNotNil(TomatoEngine.validatedSnapshot(snap, now: now))
     }
 
     func testSnapshotJustBeyondFutureToleranceIsRejected() {
@@ -178,7 +166,7 @@ final class StartupSanitizationTests: XCTestCase {
         let snap = EngineSnapshot(phase: .idle, phaseEnteredAt: at,
                                   currentSession: nil, consecutiveAborts: [],
                                   currentDayKey: "2026-07-08")
-        XCTAssertFalse(TomatoEngine.isValidSnapshot(snap, now: now))
+        XCTAssertNil(TomatoEngine.validatedSnapshot(snap, now: now))
     }
 
     func testSnapshotPastOver6DaysStillAccepted() {
@@ -187,7 +175,7 @@ final class StartupSanitizationTests: XCTestCase {
                                   phaseEnteredAt: now.addingTimeInterval(-6 * 86400 - 23 * 3600),
                                   currentSession: nil, consecutiveAborts: [],
                                   currentDayKey: "2026-07-08")
-        XCTAssertTrue(TomatoEngine.isValidSnapshot(snap, now: now))
+        XCTAssertNotNil(TomatoEngine.validatedSnapshot(snap, now: now))
     }
 
     func testSnapshotRejectsPhaseSessionStatusMismatchAndInvalidDateKey() {

@@ -274,7 +274,7 @@ final class SnapshotTests: XCTestCase {
     private func sampleSessions() -> [FocusSession] {
         var out: [FocusSession] = []
         var day = Calendar.current.date(byAdding: .day, value: -90, to: Date())!
-        var rng = SplitMix64(state: 20260708)
+        var rng = SeededRNG(state: 20260708)
         while day <= Date() {
             let n = Int(rng.next() % 7)
             for i in 0..<n {
@@ -292,5 +292,23 @@ final class SnapshotTests: XCTestCase {
             day = Calendar.current.date(byAdding: .day, value: 1, to: day)!
         }
         return out
+    }
+}
+
+/// SplitMix64 — 确定性 64-bit 伪随机数生成器（样例数据固定种子用）。
+/// 算法参考 Stafford variant of SplitMix64，分布均匀且状态可复现。
+private struct SeededRNG {
+    private var state: UInt64
+
+    init(state: UInt64) {
+        self.state = state
+    }
+
+    mutating func next() -> UInt64 {
+        state = state &+ 0x9E3779B97F4A7C15
+        var z = state
+        z = (z ^ (z >> 30)) &* 0xBF58476D1CE4E5B9
+        z = (z ^ (z >> 27)) &* 0x94D049BB133111EB
+        return z ^ (z >> 31)
     }
 }

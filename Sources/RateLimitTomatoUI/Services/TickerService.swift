@@ -1,7 +1,7 @@
 import AppKit
 import Foundation
 
-/// 秒级心跳（改写自 TomatoBar Timer.swift 的计时模式，见 docs/pinhaoma-sources.md）。
+/// 秒级心跳（改写自 TomatoBar Timer.swift 的计时模式）。
 /// - `DispatchSourceTimer` 后台队列驱动：与主 RunLoop 模式解耦，面板开合/菜单追踪
 ///   不会饿死 tick（`Timer.scheduledTimer` 的经典坑）；
 /// - 监听系统唤醒（`NSWorkspace.didWakeNotification`）立即补 tick：引擎是墙钟差值

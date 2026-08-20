@@ -6,21 +6,11 @@ public enum TimeMapper {
     public static let focusWindowSeconds: TimeInterval = 5 * 3600
 
     /// 戏仿五小时窗口的分钟粒度展示对。
+    /// 分钟粒度（docs/CHANGES.md C7）：12× 速率映射下秒位每秒 +12s 跳动，
+    /// 会被用户感知为计时故障；真实倒计时仍精确到秒。
     public static func focusWindowMinutePair(elapsed: TimeInterval, total: TimeInterval) -> (elapsed: String, total: String) {
         let mapped = Int(progressFraction(elapsed: elapsed, total: total) * focusWindowSeconds)
         return (String(format: "%dh %02dm", mapped / 3600, (mapped % 3600) / 60), "/ 5h 00m")
-    }
-    /// 戏仿 5h 窗口展示：把实际 `elapsed` 相对 `total` 的比例线性映射到 5 小时窗口。
-    /// 格式：`"4h 23m 12s / 5h00m00s"`（SPEC §9.2.1）
-    /// - 左半：`Xh YYm ZZs`（小时不补零，分钟与秒补零到两位）。
-    /// - 右半：固定 `5h00m00s`（窗口总长）。
-    public static func focusWindowDisplay(elapsed: TimeInterval, total: TimeInterval) -> String {
-        let fraction = progressFraction(elapsed: elapsed, total: total)
-        let mapped = Int((fraction * focusWindowSeconds).rounded(.down))
-        let hours = mapped / 3600
-        let minutes = (mapped % 3600) / 60
-        let seconds = mapped % 60
-        return String(format: "%dh %02dm %02ds / 5h%02dm%02ds", hours, minutes, seconds, 0, 0)
     }
 
     /// 具体时刻展示（SPEC §8.1）：用本地时区 24h 格式 `HH:mm`。

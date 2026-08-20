@@ -404,16 +404,6 @@ public final class TomatoEngine {
         return cleaned
     }
 
-    /// 兼容既有调用点的布尔预检。
-    public static func isValidSnapshot(_ snapshot: EngineSnapshot, now: Date) -> Bool {
-        validatedSnapshot(snapshot, now: now) != nil
-    }
-
-    /// 使用注入时钟检查快照时间戳是否位于允许窗口内。
-    public static func isValidSnapshot(_ snapshot: EngineSnapshot, clock: TomatoClock) -> Bool {
-        isValidSnapshot(snapshot, now: clock.now())
-    }
-
     // MARK: - Helpers
 
     private func transition(to newPhase: AppPhase, now: Date) {

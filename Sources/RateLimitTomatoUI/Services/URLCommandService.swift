@@ -1,8 +1,8 @@
 import AppKit
 import Foundation
 
-/// `rlt://` URL scheme 命令入口（改写自 TomatoBar 的 AppleEvent 处理模式，
-/// 见 docs/pinhaoma-sources.md）。示例：`open rlt://startStop`。
+/// `rlt://` URL scheme 命令入口（改写自 TomatoBar 的 AppleEvent 处理模式）。
+/// 示例：`open rlt://startStop`。
 /// AppDelegate 收到 kAEGetURL 后转发到这里；AppViewModel 在 init 时自注册 handler。
 @MainActor
 public final class URLCommandService {

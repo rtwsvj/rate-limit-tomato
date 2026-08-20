@@ -32,8 +32,8 @@ private final class SystemNotificationCenterClient: NotificationCenterClient {
     }
 }
 
-/// 系统通知（可交互，改写自 TomatoBar Notifications.swift 的模式，
-/// 见 docs/pinhaoma-sources.md）。文案戏仿主行 + 正经副行，随 settings.language 双语。
+/// 系统通知（可交互，改写自 TomatoBar Notifications.swift 的模式）。
+/// 文案戏仿主行 + 正经副行，随 settings.language 双语。
 ///
 /// 仅在真实 .app 环境注册：裸 SPM 可执行/XCTest 下 UNUserNotificationCenter
 /// 会因缺 bundle proxy 崩溃，`isAvailable` 挡掉。

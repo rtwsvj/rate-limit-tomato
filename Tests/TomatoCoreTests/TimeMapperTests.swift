@@ -32,54 +32,6 @@ final class TimeMapperTests: XCTestCase {
         XCTAssertEqual(TimeMapper.progressFraction(elapsed: 50, total: -10), 0)
     }
 
-    // MARK: - focusWindowDisplay
-
-    func testFocusWindowDisplayZero() {
-        XCTAssertEqual(
-            TimeMapper.focusWindowDisplay(elapsed: 0, total: 25 * 60),
-            "0h 00m 00s / 5h00m00s"
-        )
-    }
-
-    func testFocusWindowDisplayHalf() {
-        // 12.5 min / 25 min = 0.5 -> 2.5h -> 2h 30m
-        XCTAssertEqual(
-            TimeMapper.focusWindowDisplay(elapsed: 12.5 * 60, total: 25 * 60),
-            "2h 30m 00s / 5h00m00s"
-        )
-    }
-
-    func testFocusWindowDisplayFull() {
-        XCTAssertEqual(
-            TimeMapper.focusWindowDisplay(elapsed: 25 * 60, total: 25 * 60),
-            "5h 00m 00s / 5h00m00s"
-        )
-    }
-
-    func testFocusWindowDisplayOverClamps() {
-        XCTAssertEqual(
-            TimeMapper.focusWindowDisplay(elapsed: 99 * 60, total: 25 * 60),
-            "5h 00m 00s / 5h00m00s"
-        )
-    }
-
-    func testFocusWindowDisplayZeroTotalClamps() {
-        // 0 total 时 progressFraction 返回 0
-        XCTAssertEqual(
-            TimeMapper.focusWindowDisplay(elapsed: 100, total: 0),
-            "0h 00m 00s / 5h00m00s"
-        )
-    }
-
-    func testFocusWindowDisplaySecondsPadded() {
-        // 0.001/25 min ≈ 0.0000007 of 5h = 0.001*12s = 0.012s → 0s
-        // 6.25 min / 25 min = 0.25 -> 1.25h -> 1h 15m
-        XCTAssertEqual(
-            TimeMapper.focusWindowDisplay(elapsed: 6.25 * 60, total: 25 * 60),
-            "1h 15m 00s / 5h00m00s"
-        )
-    }
-
     // MARK: - resetTimeDisplay
 
     func testResetTimeDisplayFormat() {

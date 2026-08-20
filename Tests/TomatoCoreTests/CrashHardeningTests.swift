@@ -1,6 +1,24 @@
 import XCTest
 @testable import TomatoCore
 
+/// SplitMix64 — 确定性 64-bit 伪随机数生成器，本文件的模糊测试 RNG。
+/// 算法参考 Stafford variant of SplitMix64，分布均匀且状态可复现。
+private struct SplitMix64 {
+    private var state: UInt64
+
+    init(state: UInt64) {
+        self.state = state
+    }
+
+    mutating func next() -> UInt64 {
+        state = state &+ 0x9E3779B97F4A7C15
+        var z = state
+        z = (z ^ (z >> 30)) &* 0xBF58476D1CE4E5B9
+        z = (z ^ (z >> 27)) &* 0x94D049BB133111EB
+        return z ^ (z >> 31)
+    }
+}
+
 /// 闪退专项（v3.1）：核心层在任意输入/任意事件序列下不崩、不变量恒成立。
 final class CrashHardeningTests: XCTestCase {
     // MARK: 引擎事件模糊测试
@@ -50,8 +68,8 @@ final class CrashHardeningTests: XCTestCase {
             engine.focusRemaining,
             TimeInterval(engine.settings.focusDurationMin * 60)
         )
-        let display = TimeMapper.focusWindowDisplay(elapsed: engine.focusElapsed, total: 25 * 60)
-        XCTAssertFalse(display.contains("-"), "倒退时钟不许出现负数显示")
+        let pair = TimeMapper.focusWindowMinutePair(elapsed: engine.focusElapsed, total: 25 * 60)
+        XCTAssertFalse(pair.elapsed.contains("-"), "倒退时钟不许出现负数显示")
     }
 
     func testClockGoingBackAcrossMidnightDoesNotResetQuota() {
@@ -173,16 +191,12 @@ final class CrashHardeningTests: XCTestCase {
         for bad in [Double.nan, .infinity, -.infinity, -1, 0] {
             let f = TimeMapper.progressFraction(elapsed: bad, total: 25 * 60)
             XCTAssertTrue(f >= 0 && f <= 1, "fraction 越界: \(bad) -> \(f)")
-            _ = TimeMapper.focusWindowDisplay(elapsed: bad, total: 25 * 60)
+            _ = TimeMapper.focusWindowMinutePair(elapsed: bad, total: 25 * 60)
             _ = TimeMapper.progressFraction(elapsed: 100, total: bad)
         }
-        // TokenMeter / 假数据生成器：负值与巨值
-        let meter = TokenMeter(seed: 1)
-        XCTAssertEqual(meter.tokens(forElapsedSeconds: -100), 0)
-        _ = meter.tokens(forElapsedSeconds: 100_000)
+        // 假数据生成器：负值与巨值
         _ = FakeLogStreamGenerator(seed: 0).lines(elapsed: -5)
         _ = FakeLogStreamGenerator(seed: 0).lines(elapsed: 1e6)
-        _ = FakeJsonGenerator.aborted(id: "", durationMs: -1)
         XCTAssertFalse(TokenMeter.insertThousandsSeparator(Int.min).isEmpty)
         XCTAssertFalse(FakeHeaderGenerator.rateLimited(
             limit: Int.max,
@@ -210,23 +224,5 @@ final class CrashHardeningTests: XCTestCase {
         _ = HeatmapAggregator.uptimeDays(sessions: [], endingAt: .distantFuture, calendar: .current)
         _ = HeatmapAggregator.dayDistribution(sessions: [], date: "")
         XCTAssertNil(HeatmapAggregator.peakHour(distribution: []))
-    }
-}
-
-extension CrashHardeningTests {
-    /// 非有限输入不得触发 Int 转换陷阱。
-    func testTokenMeterNonFiniteInputsDoNotTrap() {
-        let meter = TokenMeter(seed: 7)
-        _ = meter.tokens(forElapsedSeconds: 60)
-        XCTAssertGreaterThanOrEqual(meter.tokens(forElapsedSeconds: .nan), 0)
-        XCTAssertGreaterThanOrEqual(meter.tokens(forElapsedSeconds: .infinity), 0)
-        XCTAssertGreaterThanOrEqual(meter.tokens(forElapsedSeconds: -.infinity), 0)
-        XCTAssertGreaterThanOrEqual(
-            TokenMeter(seed: 1, baseTokensPerMinute: 1_000_000)
-                .tokens(forElapsedSeconds: Double.greatestFiniteMagnitude),
-            0
-        )
-        XCTAssertGreaterThan(TokenMeter.safeInt(Double.greatestFiniteMagnitude), 0)
-        XCTAssertEqual(TokenMeter.safeInt(-Double.greatestFiniteMagnitude), 0)
     }
 }

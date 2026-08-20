@@ -260,15 +260,6 @@ public final class TomatoStore {
 
     // MARK: - Generic atomic JSON I/O
 
-    public func write<T: Encodable>(_ value: T, to filename: String) throws {
-        let url = directory?.appendingPathComponent(filename)
-        let encoder = Self.makeEncoder()
-        let data = try encoder.encode(value)
-        if let url = url {
-            try Self.atomicWrite(data: data, to: url)
-        }
-    }
-
     public func read<T: Decodable>(_ type: T.Type, from filename: String) throws -> T? {
         guard let url = directory?.appendingPathComponent(filename) else {
             throw NSError(
@@ -433,13 +424,6 @@ public final class TomatoStore {
             used += scalarBytes
         }
         return String(result)
-    }
-
-    public func delete(_ filename: String) throws {
-        guard let url = directory?.appendingPathComponent(filename) else { return }
-        if FileManager.default.fileExists(atPath: url.path) {
-            try FileManager.default.removeItem(at: url)
-        }
     }
 
     public static func atomicWrite(data: Data, to url: URL) throws {

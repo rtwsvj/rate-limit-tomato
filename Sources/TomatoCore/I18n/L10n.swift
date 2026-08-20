@@ -36,13 +36,6 @@ public enum L10n {
         return catalog.keys.sorted()
     }
 
-    /// 指定 locale 下显式存在的 key（方言彩蛋用）。
-    public static func keys(in locale: String) -> [String] {
-        return catalog.compactMap { (key, entries) in
-            entries[locale] != nil ? key : nil
-        }.sorted()
-    }
-
     public static func hasKey(_ key: String, locale: String) -> Bool {
         return catalog[key]?[locale] != nil
     }
@@ -289,10 +282,6 @@ public enum L10n {
         "action.refresh": [
             "zh-CN": "刷新",
             "en": "Refresh",
-        ],
-        "action.close": [
-            "zh-CN": "关闭",
-            "en": "Close",
         ],
         "action.start_trial": [
             "zh-CN": "开始免费试用 →",
